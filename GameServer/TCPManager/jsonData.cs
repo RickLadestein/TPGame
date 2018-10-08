@@ -46,8 +46,14 @@ namespace GameServer.TCPManager
         public void WritequestionsToFile()
         {
             setJsonQuestions();
-            json = JsonConvert.SerializeObject(_data.ToArray());
-            File.WriteAllText(@"D:\jsonFile.json", json);
+            JArray data = new JArray();
+            foreach(JObject o in _data)
+            {
+                data.Add(o);
+            }
+            json = JsonConvert.SerializeObject(data);
+            json.Insert(0, "{data:");
+            //File.WriteAllText(@"D:\jsonFile.json", json);
         }
 
         public void ReadquestionfromFile(TrivialPersuit game)
@@ -80,7 +86,7 @@ namespace GameServer.TCPManager
 
             game.questions.Clear();
            dynamic jsonData = JsonConvert.DeserializeObject(jsonstring);
-            JArray data = jsonData._data;
+            JArray data = jsonData.data;
             for(int i = 0; i < data.Count; i++)
             {
                 dynamic dataInArray = data[i];

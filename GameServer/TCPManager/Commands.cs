@@ -10,6 +10,7 @@ namespace GameServer.TCPManager
 {
     class Commands
     {
+        private static Random number = new Random(200);
         public static string InitializePlayer(int id)
         {
             return JsonConvert.SerializeObject(new
@@ -31,36 +32,55 @@ namespace GameServer.TCPManager
             });
         }
 
-        public static string AskQuestion(String q, String answer)
+        public static string AskQuestion(String q, String ranswer ,String answer2, String answer3, String answer4)
         {
-            String[] aw = new String[4];
-            Random rng = new Random();
-            for(int i = 0; i < 4; i++)
-            {
-                int identifier = rng.Next(0, 1);
-                int number = rng.Next(0, 100);
-                switch (identifier)
-                {
-                    case 0:
-                        aw[i] = Convert.ToString(Convert.ToInt32(answer) + number);
-                        break;
+            List<string> answers = new List<string>();
+            answers.Add(ranswer);
+            answers.Add(answer2);
+            answers.Add(answer3);
+            answers.Add(answer4);
 
-                    case 1:
-                        aw[i] = Convert.ToString(Convert.ToInt32(answer) - number);
-                        break;
+            for(int i = 0; i < number.Next(0, 100); i++)
+            {
+                string first;
+                string second;
+                int num;
+                int num2 = number.Next(0, 3);
+                if (num2 == 0)
+                {
+                    first = answers[0];
+                    num = number.Next(0, 3);
+                    second = answers[number.Next(0, 3)];
+                    answers[0] = second;
+                    answers[num] = first;
+                } else if(num2 == (answers.Count - 1))
+                {
+                    first = answers[answers.Count - 1];
+                    num = number.Next(0, 3);
+                    second = answers[number.Next(0, 3)];
+                    answers[answers.Count - 1] = second;
+                    answers[num] = first;
+                } else
+                {
+                    first = answers[num2];
+                    num = number.Next(0, 3);
+                    second = answers[num];
+                    answers[num2] = second;
+                    answers[num] = first;
                 }
             }
-            aw[rng.Next(0, 3)] = answer;
+
+
 
             return JsonConvert.SerializeObject(new
             {
                 origin = "host",
                 command = "game/question",
                 question = q,
-                answer1 = aw[0],
-                answer2 = aw[1],
-                answer3 = aw[2],
-                answer4 = aw[3]
+                answer1 = answers[0],
+                answer2 = answers[1],
+                answer3 = answers[2],
+                answer4 = answers[3]
             });
         }
 

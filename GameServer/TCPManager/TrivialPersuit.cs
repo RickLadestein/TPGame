@@ -23,6 +23,8 @@ namespace GameServer.TCPManager
         private TCPDataManager manager;
         private Session session;
 
+        public string answer2 = "", answer3 = "", answer4 = "";
+
         private jsonData json= new jsonData();
 
         public TrivialPersuit(TCPDataManager manager, Session session)
@@ -37,7 +39,6 @@ namespace GameServer.TCPManager
             rightanswercount = 0;
             this.manager = manager;
             this.session = session;
-            questions = new List<QuestionAnswer>();
         }
 
         public string getQuestion()
@@ -47,19 +48,17 @@ namespace GameServer.TCPManager
             string var1 = Convert.ToString(randomNumber.Next(0, 1000));
             string var2 = Convert.ToString(randomNumber.Next(0, 1000));
 
-            int rng = randomNumber.Next(0, 3);
-            switch (rng)
-            {
-                case 0: modifier = "+"; currentAnswer = Convert.ToString(Convert.ToInt32(var1) + Convert.ToInt32(var2)); break;
-                case 1: modifier = "-"; currentAnswer = Convert.ToString(Convert.ToInt32(var1) - Convert.ToInt32(var2)); break;
-                case 2: modifier = "*"; currentAnswer = Convert.ToString(Convert.ToInt32(var1) * Convert.ToInt32(var2)); break;
-                default: modifier = "+"; currentAnswer = Convert.ToString(Convert.ToInt32(var1) + Convert.ToInt32(var2)); break;
-            }
+            int rng = randomNumber.Next(0, questions.Count);
+            QuestionAnswer question = questions[rng];
 
-            currentQuestion = $"{var1} {modifier} {var2}";
+            currentQuestion = $"{question.question}";
+            currentAnswer = $"{question.rightAnswer}";
             allplayersAnswered = false;
             answerCount = 0;
             rightanswercount = 0;
+            answer2 = question.answe2;
+            answer3 = question.answe3;
+            answer4 = question.answer4;
             return currentQuestion;
         }
 

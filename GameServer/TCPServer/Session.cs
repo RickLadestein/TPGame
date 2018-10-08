@@ -26,9 +26,13 @@ namespace GameServer.TCPServer
         private TCPDataManager manager;
         private bool ongoing;
         private const int Maxpoints = 4;
+        private Server server;
+        private int id;
 
-        public Session(TcpClient c1, TcpClient c2)
+        public Session(TcpClient c1, TcpClient c2, Server server, int id)
         {
+            this.id = id;
+            this.server = server;
             connection1 = c1;
             connection2 = c2;
             player1points = 0;
@@ -56,11 +60,20 @@ namespace GameServer.TCPServer
         public void Start()
         {
             gameLoop();
+            Stop();
+            Console.WriteLine("Stopping this session");
+        }
+
+        public void Stop()
+        {
+            Thread.Sleep(2000);
+            server.StopSession(player1, worker1, player2, worker2,this, id);
+
         }
 
         private void gameLoop()
         {
-            manager.AskAllPlayersQuestion(Commands.AskQuestion(game.getQuestion(), game.getAnswer()));
+            manager.AskAllPlayersQuestion(Commands.AskQuestion(game.getQuestion(), game.getAnswer(), game.answer2, game.answer3, game.answer4));
             while (ongoing)
             {
                 if (!(player1points >= Maxpoints || player2points >= Maxpoints))
@@ -68,7 +81,7 @@ namespace GameServer.TCPServer
 
                     if (game.allplayersAnswered)
                     {
-                        manager.AskAllPlayersQuestion(Commands.AskQuestion(game.getQuestion(), game.getAnswer()));
+                        manager.AskAllPlayersQuestion(Commands.AskQuestion(game.getQuestion(), game.getAnswer(), game.answer2, game.answer3, game.answer4));
                     } else if (!game.allplayersAnswered)
                     {
                         //TODO something when not all players have answered

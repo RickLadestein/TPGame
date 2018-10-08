@@ -18,9 +18,11 @@ namespace GameServer.TCPServer
         private TcpClient player1;
         private TcpClient player2;
         private List<Thread> sessionPool;
+        private int sessionid;
 
         public Server()
         {
+            sessionid = 0;
             server = new TcpListener(IPAddress.Any, 6666);
             sessionPool = new List<Thread>();
         }
@@ -38,10 +40,22 @@ namespace GameServer.TCPServer
                 Console.WriteLine($"Player 2 found on IP:{player2.Client.RemoteEndPoint}");
                 Console.WriteLine($"Started a session with {player1.Client.RemoteEndPoint} and {player2.Client.RemoteEndPoint}");
                 Console.WriteLine("------------------------------------------------------------------------");
-                sessionPool.Add(new Thread(new ThreadStart(new Session(player1, player2).Start)));
+                sessionPool.Add(new Thread(new ThreadStart(new Session(player1, player2, this, sessionid).Start)));
                 sessionPool[sessionPool.Count - 1].Start();
-                
+                sessionid++;
             }
+        }
+
+        public void StopSession(TCPConnection p1, Thread p1t, TCPConnection p2, Thread p2t, Session s, int sessionid)
+        {
+            p1.Stop();
+            p2.Stop();
+            p1t.Abort();
+            p2t.Abort();
+
+            Console.WriteLine($"Aborting sessions {sessionid}");
+            sessionPool[sessionid].Abort();
+            sessionPool[sessionid].Join();
         }
 
         private string GetLocalIPAddress()

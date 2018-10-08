@@ -18,6 +18,8 @@ namespace GameServer.TCPServer
         private TcpClient client;
         private TCPReceiver receiver;
         private ITCPDataListener listener;
+        private Thread worker;
+        private bool alive;
 
         public TCPConnection(int playerID, TCPDataManager manager, TcpClient client, ITCPDataListener listener)
         {
@@ -25,13 +27,14 @@ namespace GameServer.TCPServer
             this.manager = manager;
             this.client = client;
             this.listener = listener;
+            this.alive = true;
         }
 
         public void Start()
         {
-            Thread worker = new Thread(new ThreadStart(new TCPReceiver(client,listener).Start));
+            worker = new Thread(new ThreadStart(new TCPReceiver(client,listener).Start));
             worker.Start();
-            while (true)
+            while (alive)
             {
                 Thread.Sleep(10);
                 if (playerID == 1)
@@ -56,6 +59,12 @@ namespace GameServer.TCPServer
                     }
                 }
             }
+        }
+
+        public void Stop()
+        {
+            worker.Abort();
+            worker.Join();
         }
 
         private void SendData(string message)
