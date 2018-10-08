@@ -11,6 +11,7 @@ namespace GameServer.TCPManager
 {
     class TrivialPersuit
     {
+        public List<QuestionAnswer> questions = new List<QuestionAnswer>();
         private int player1points;
         private int player2points;
 
@@ -22,8 +23,13 @@ namespace GameServer.TCPManager
         private TCPDataManager manager;
         private Session session;
 
+        private jsonData json= new jsonData();
+
         public TrivialPersuit(TCPDataManager manager, Session session)
         {
+            json.WritequestionsToFile();
+            json.ReadquestionfromFile(this);
+            Console.WriteLine(questions);
             player1points = 0;
             player2points = 0;
             allplayersAnswered = false;
@@ -31,6 +37,7 @@ namespace GameServer.TCPManager
             rightanswercount = 0;
             this.manager = manager;
             this.session = session;
+            questions = new List<QuestionAnswer>();
         }
 
         public string getQuestion()

@@ -5,10 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace GameServer.TCPManager
 {
-    public class jsonData
+    class jsonData
     {
         private string question { get; set; }
         private string ranswer { get; set; }
@@ -16,10 +17,10 @@ namespace GameServer.TCPManager
         private string answer3 { get; set; }
         private string answer4 { get; set; }
         private string json;
-        private List<jsonData> _data = new List<jsonData>();
+        private List<JObject> _data = new List<JObject>();
 
 
-        public void setJsonQuestions()
+        private void setJsonQuestions()
         {
             AddQuestionAnswer("waar staat het grootste reuzenrad ter wereld?", "singapore", "london", "dubai", "parijs");
             AddQuestionAnswer("Wat wordt bedoeld met horripilatie of spasmodermie?", "kippenvel", "Angst voor Ti'ers", "Spasme", "Wiskunde");
@@ -33,26 +34,66 @@ namespace GameServer.TCPManager
 
         private void AddQuestionAnswer(string question, string rightanswer, string answer2, string answer3, string answer4)
         {
-            _data.Add(new jsonData()
-            {
-                question = question,
-                ranswer = rightanswer,
-                answer2 = answer2,
-                answer3 = answer3,
-                answer4 = answer4
-            });
+            JObject quan = new JObject();
+            quan.Add("question", question);
+            quan.Add("ranswer",rightanswer);
+            quan.Add("answer2", answer2);
+            quan.Add("answer3", answer3);
+            quan.Add("answer4", answer4);
+            _data.Add(quan);
         }
 
         public void WritequestionsToFile()
         {
+            setJsonQuestions();
             json = JsonConvert.SerializeObject(_data.ToArray());
             File.WriteAllText(@"D:\jsonFile.json", json);
         }
 
-        public void ReadquestionsFromFile()
+        public void ReadquestionfromFile(TrivialPersuit game)
         {
-            dynamic results = JsonConvert.DeserializeObject<dynamic>(json);
-            var question = results.question;
+            string lines = "";
+            StreamReader reader = new StreamReader(@"D:\jsonFile.json");
+            try
+            {
+                do
+                {
+                    lines += reader.ReadLine();
+                }
+                while (reader.Peek() != -1);
+            }
+
+            catch(Exception e)
+            {
+                Console.WriteLine(e.StackTrace);
+            }
+
+            finally
+            {
+                reader.Close();
+                ReadquestionsFromString(game, lines);
+            }
+        }
+
+        private void ReadquestionsFromString(TrivialPersuit game, string jsonstring)
+        {
+
+            game.questions.Clear();
+           dynamic jsonData = JsonConvert.DeserializeObject(jsonstring);
+            JArray data = jsonData._data;
+            for(int i = 0; i < data.Count; i++)
+            {
+                dynamic dataInArray = data[i];
+                string question = dataInArray.question;
+                string ranswer = dataInArray.ranswer;
+                string answer2 = dataInArray.answer2;
+                string answer3 = dataInArray.answer3;
+                string answer4 = dataInArray.answer4;
+
+                game.questions.Add(new QuestionAnswer(question, ranswer, answer2, answer3, answer4));
+            }
+
+            
             
         }
     } 

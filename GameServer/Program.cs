@@ -19,6 +19,7 @@ namespace GameServer
         {
             new Thread(new ThreadStart(new Server().Start)).Start();
             //Console.ReadLine();
+
         }
     }
 }

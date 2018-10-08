@@ -52,6 +52,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TCPManager\Commands.cs" />
     <Compile Include="TCPManager\jsonData.cs" />
+    <Compile Include="TCPManager\QuestionAnswer.cs" />
     <Compile Include="TCPServer\ITCPDataListener.cs" />
     <Compile Include="TCPManager\Message.cs" />
     <Compile Include="TCPServer\Server.cs" />
