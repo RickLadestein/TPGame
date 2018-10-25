@@ -73,7 +73,14 @@ namespace GUIEindopdracht
 
         public void OnDataReceived(string e)
         {
-            dynamic message = JsonConvert.DeserializeObject(e);
+            dynamic message;
+            try
+            {
+                message = JsonConvert.DeserializeObject(e);
+            } catch (Exception ex)
+            {
+                message = JsonConvert.DeserializeObject(e + "}");
+            }
             if(message.origin == "host")
             {
                 string command = message.command;

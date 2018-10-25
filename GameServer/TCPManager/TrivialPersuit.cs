@@ -23,6 +23,8 @@ namespace GameServer.TCPManager
         private TCPDataManager manager;
         private Session session;
 
+        Random randomNumber = new Random(123);
+
         public string answer2 = "", answer3 = "", answer4 = "";
 
         private jsonData json= new jsonData();
@@ -44,7 +46,6 @@ namespace GameServer.TCPManager
         public string getQuestion()
         {
             String modifier;
-            Random randomNumber = new Random();
             string var1 = Convert.ToString(randomNumber.Next(0, 1000));
             string var2 = Convert.ToString(randomNumber.Next(0, 1000));
 
@@ -114,8 +115,14 @@ namespace GameServer.TCPManager
 
         public void decodeAnswer(String e)
         {
-            dynamic message = JsonConvert.DeserializeObject(e);
-
+            dynamic message;
+            try
+            {
+                message = JsonConvert.DeserializeObject(e);
+            } catch(Exception ex)
+            {
+                message = message = JsonConvert.DeserializeObject(e + "}");
+            }
             int player = Convert.ToInt32(message.player);
             String command = message.command;
             String answer = message.answer;
