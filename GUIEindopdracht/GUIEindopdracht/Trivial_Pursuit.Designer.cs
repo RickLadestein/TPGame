@@ -62,17 +62,16 @@
             // Player1Textbox
             // 
             this.Player1Textbox.Location = new System.Drawing.Point(164, 45);
-            this.Player1Textbox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Player1Textbox.Margin = new System.Windows.Forms.Padding(2);
             this.Player1Textbox.Name = "Player1Textbox";
             this.Player1Textbox.Size = new System.Drawing.Size(76, 20);
             this.Player1Textbox.TabIndex = 2;
             this.Player1Textbox.Text = "0";
-            this.Player1Textbox.TextChanged += new System.EventHandler(this.player1Textbox_TextChanged);
             // 
             // Player2Textbox
             // 
             this.Player2Textbox.Location = new System.Drawing.Point(365, 45);
-            this.Player2Textbox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Player2Textbox.Margin = new System.Windows.Forms.Padding(2);
             this.Player2Textbox.Name = "Player2Textbox";
             this.Player2Textbox.Size = new System.Drawing.Size(76, 20);
             this.Player2Textbox.TabIndex = 3;
@@ -81,7 +80,7 @@
             // questionTextbox
             // 
             this.questionTextbox.Location = new System.Drawing.Point(100, 88);
-            this.questionTextbox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.questionTextbox.Margin = new System.Windows.Forms.Padding(2);
             this.questionTextbox.Multiline = true;
             this.questionTextbox.Name = "questionTextbox";
             this.questionTextbox.ReadOnly = true;
@@ -91,7 +90,7 @@
             // AnswerButton1
             // 
             this.AnswerButton1.Location = new System.Drawing.Point(179, 171);
-            this.AnswerButton1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.AnswerButton1.Margin = new System.Windows.Forms.Padding(2);
             this.AnswerButton1.Name = "AnswerButton1";
             this.AnswerButton1.Size = new System.Drawing.Size(196, 29);
             this.AnswerButton1.TabIndex = 5;
@@ -101,7 +100,7 @@
             // AnswerButton2
             // 
             this.AnswerButton2.Location = new System.Drawing.Point(179, 205);
-            this.AnswerButton2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.AnswerButton2.Margin = new System.Windows.Forms.Padding(2);
             this.AnswerButton2.Name = "AnswerButton2";
             this.AnswerButton2.Size = new System.Drawing.Size(196, 29);
             this.AnswerButton2.TabIndex = 6;
@@ -111,7 +110,7 @@
             // AnswerButton3
             // 
             this.AnswerButton3.Location = new System.Drawing.Point(179, 239);
-            this.AnswerButton3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.AnswerButton3.Margin = new System.Windows.Forms.Padding(2);
             this.AnswerButton3.Name = "AnswerButton3";
             this.AnswerButton3.Size = new System.Drawing.Size(196, 29);
             this.AnswerButton3.TabIndex = 7;
@@ -121,7 +120,7 @@
             // AnswerButton4
             // 
             this.AnswerButton4.Location = new System.Drawing.Point(179, 273);
-            this.AnswerButton4.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.AnswerButton4.Margin = new System.Windows.Forms.Padding(2);
             this.AnswerButton4.Name = "AnswerButton4";
             this.AnswerButton4.Size = new System.Drawing.Size(196, 29);
             this.AnswerButton4.TabIndex = 8;
@@ -143,9 +142,10 @@
             this.Controls.Add(this.Player2Label);
             this.Controls.Add(this.Player1Label);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Trivial_Pursuit";
             this.Text = "Trivial_Pursuit";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Trivial_Pursuit_FormClosing);
             this.Load += new System.EventHandler(this.Trivial_Pursuit_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

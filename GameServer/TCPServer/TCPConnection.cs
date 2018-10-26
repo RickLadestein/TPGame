@@ -14,69 +14,62 @@ namespace GameServer.TCPServer
     class TCPConnection
     {
         private int playerID;
-        private TCPDataManager manager;
         private TcpClient client;
-        private TCPReceiver receiver;
         private ITCPDataListener listener;
+        private StreamWriter writer;
+
+        private TCPReceiver receiver;
         private Thread worker;
         private bool alive;
 
-        public TCPConnection(int playerID, TCPDataManager manager, TcpClient client, ITCPDataListener listener)
+        public TCPConnection(int playerID, TcpClient client, ITCPDataListener listener)
         {
             this.playerID = playerID;
-            this.manager = manager;
             this.client = client;
             this.listener = listener;
+            this.writer = new StreamWriter(client.GetStream());
             this.alive = true;
+            StartStreamworker();
         }
 
-        public void Start()
+        public void SendData(string message)
         {
-            worker = new Thread(new ThreadStart(new TCPReceiver(client,listener).Start));
-            worker.Start();
-            while (alive)
+            if (alive)
             {
-                Thread.Sleep(10);
-                if (playerID == 1)
+                try
                 {
-                    if (manager.outgoingPlayer1.Count != 0)
-                    {
-                        if (((Message)manager.outgoingPlayer1.Peek()).destination == playerID)
-                        {
-                            string message = manager.outgoingPlayer1.Dequeue().message;
-                            SendData(message);
-                        }
-                    }
-                } else if(playerID == 2)
+                    writer.WriteLine(message);
+                    writer.Flush();
+                } catch(Exception ex)
                 {
-                    if (manager.outgoingPlayer2.Count != 0)
-                    {
-                        if (((Message)manager.outgoingPlayer2.Peek()).destination == playerID)
-                        {
-                            string message = manager.outgoingPlayer2.Dequeue().message;
-                            SendData(message);
-                        }
-                    }
+                    Console.WriteLine("Could not send data: " + ex);
+                    this.alive = false;
                 }
             }
         }
 
-        public void Stop()
+        private void StartStreamworker()
         {
-            worker.Abort();
-            worker.Join();
+            receiver = new TCPReceiver(this.client, this.listener);
+            worker = new Thread(new ThreadStart(receiver.Start));
+            worker.Start();
         }
 
-        private void SendData(string message)
+        public void CloseConnection()
         {
-            byte[] length = BitConverter.GetBytes(message.Length);
-            byte[] data = Encoding.UTF8.GetBytes(message);
-            byte[] msg = new byte[length.Length + data.Length];
-            length.CopyTo(msg, 0);
-            data.CopyTo(msg, length.Length);
-            NetworkStream networkStream = client.GetStream();
-            networkStream.Write(msg, 0, msg.Length);
-            Console.WriteLine("sent: " + message);
+            try
+            {
+                alive = false;
+                receiver.Stop();
+                writer.Flush();
+                writer.Close();
+                client.Close();
+            } catch(Exception ex)
+            {
+                Console.WriteLine("Error closing connection: " + ex);
+            }
         }
+
+       
     }
 }

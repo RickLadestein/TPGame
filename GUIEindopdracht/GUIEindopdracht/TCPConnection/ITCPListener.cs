@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameServer.TCPServer
+namespace GUIEindopdracht.TCPConnection
 {
-    interface ITCPDataListener
+    interface ITCPListener
     {
-        void OnDataReceived(string e);
+        void OnDataReceived(string data);
     }
 }

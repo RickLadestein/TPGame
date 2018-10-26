@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using GUIEindopdracht.TCPConnection;
 
 namespace GUIEindopdracht
 {
@@ -14,27 +15,12 @@ namespace GUIEindopdracht
     {
         public int playerID;
 
-        private readonly Connector connector;
+        private Connection conn;
 
         public Trivial_Pursuit()
         {
             InitializeComponent();
-            connector = new Connector(this);
-        }
-
-        private void player1Textbox_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void player2Textbox_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void QuestionTextbox_TextChanged(object sender, EventArgs e)
-        {
-
+            conn = new Connection(this, "localhost", 6666);
         }
 
         public void SetPlayerID(int id)
@@ -75,12 +61,11 @@ namespace GUIEindopdracht
             {
                 Invoke(new Action(() => { MessageBox.Show("Oh noooo u lost, loser", $"Player {id} wins"); }));
             }
-            //TODO something when a player wins
         }
 
         public void GiveAnswer(string answer)
         {
-            connector.SendCommand(Commands.AnswerQuestionFromServer(answer,playerID));
+            conn.SendAnswer(answer, playerID);
         }
 
         public void LockAllButtons()
@@ -126,6 +111,11 @@ namespace GUIEindopdracht
         {
             LockAllButtons();
             GiveAnswer(AnswerButton4.Text);
+        }
+
+        private void Trivial_Pursuit_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            conn.CloseConnection();
         }
     }
 }

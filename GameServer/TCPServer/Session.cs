@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Threading;
 using GameServer.TCPManager;
+using Newtonsoft.Json;
 
 namespace GameServer.TCPServer
 {
@@ -16,18 +17,16 @@ namespace GameServer.TCPServer
         private TcpClient connection1;
         private TcpClient connection2;
 
-        private Thread worker1;
-        private Thread worker2;
-
         public int player1points;
         public int player2points;
 
         private TrivialPersuit game;
-        private TCPDataManager manager;
         private bool ongoing;
         private const int Maxpoints = 4;
         private Server server;
         private int id;
+
+        private int connectedPlayers = 2;
 
         public Session(TcpClient c1, TcpClient c2, Server server, int id)
         {
@@ -37,23 +36,21 @@ namespace GameServer.TCPServer
             connection2 = c2;
             player1points = 0;
             player2points = 0;
-            manager = new TCPDataManager();
-            game = new TrivialPersuit(this.manager, this);
             InitializeSession();
+            game = new TrivialPersuit(this);
+            
         }
 
         private void InitializeSession()
         {
-            manager.AddCommandToQueue(1, Commands.InitializePlayer(1));
-            manager.AddCommandToQueue(2, Commands.InitializePlayer(2));
-            player1 = new TCPConnection(1, this.manager, this.connection1,this);
-            player2 = new TCPConnection(2, this.manager, this.connection2,this);
+            player1 = new TCPConnection(1, this.connection1, this);
+            player2 = new TCPConnection(2, this.connection2, this);
 
-            worker1 = new Thread(new ThreadStart(player1.Start));
-            worker2 = new Thread(new ThreadStart(player2.Start));
+            SendPlayerData(1, Commands.InitializePlayer(1));
+            SendPlayerData(2, Commands.InitializePlayer(2));
+            
+            
 
-            worker1.Start();
-            worker2.Start();
             ongoing = true;
         }
 
@@ -67,13 +64,34 @@ namespace GameServer.TCPServer
         public void Stop()
         {
             Thread.Sleep(2000);
-            server.StopSession(player1, worker1, player2, worker2,this, id);
+            server.StopSession(player1, player2,this, id);
 
+        }
+
+        public void SendAllPlayersData(string data)
+        {
+            player1.SendData(data);
+            player2.SendData(data);
+        }
+
+        public void SendPlayerData(int player, string data)
+        {
+            Console.WriteLine("sent: " + data);
+            if(player == 1)
+            {
+                player1.SendData(data);
+            } else if(player == 2)
+            {
+                player2.SendData(data);
+            } else
+            {
+                Console.WriteLine($"Player {player} does not exist");
+            }
         }
 
         private void gameLoop()
         {
-            manager.AskAllPlayersQuestion(Commands.AskQuestion(game.getQuestion(), game.getAnswer(), game.answer2, game.answer3, game.answer4));
+            SendAllPlayersData(Commands.AskQuestion(game.getQuestion(), game.getAnswer(), game.answer2, game.answer3, game.answer4));
             while (ongoing)
             {
                 if (!(player1points >= Maxpoints || player2points >= Maxpoints))
@@ -81,7 +99,7 @@ namespace GameServer.TCPServer
 
                     if (game.allplayersAnswered)
                     {
-                        manager.AskAllPlayersQuestion(Commands.AskQuestion(game.getQuestion(), game.getAnswer(), game.answer2, game.answer3, game.answer4));
+                        SendAllPlayersData(Commands.AskQuestion(game.getQuestion(), game.getAnswer(), game.answer2, game.answer3, game.answer4));
                     } else if (!game.allplayersAnswered)
                     {
                         //TODO something when not all players have answered
@@ -91,18 +109,51 @@ namespace GameServer.TCPServer
                     ongoing = false;
                     if(player1points >= Maxpoints)
                     {
-                        manager.AskAllPlayersQuestion(Commands.PlayerHasWon(1));
+                        SendAllPlayersData(Commands.PlayerHasWon(1));
                     } else if(player2points >= Maxpoints)
                     {
-                        manager.AskAllPlayersQuestion(Commands.PlayerHasWon(2));
+                        SendAllPlayersData(Commands.PlayerHasWon(2));
                     }
                 }
             }
         }
+
+        private void OnplayerDisconnect()
+        {
+            connectedPlayers -= 1;
+            if (connectedPlayers == 0)
+                this.ongoing = false;
+        }
+
         public void OnDataReceived(string e)
         {
-            //Console.WriteLine("Received: " + e);
-            game.decodeAnswer(e);
+            Console.WriteLine("Received: " + e);
+            dynamic message = JsonConvert.DeserializeObject(e);
+            if (message.command == "player/disconnect" || e == "")
+            {
+                int player = message.player;
+                if (player == 1)
+                {
+                    player1.CloseConnection();
+                    OnplayerDisconnect();
+                }
+                else if (player == 2)
+                {
+                    player2.CloseConnection();
+                    OnplayerDisconnect();
+                }
+                else
+                {
+                    player1.CloseConnection();
+                    player2.CloseConnection();
+                    OnplayerDisconnect();
+                    OnplayerDisconnect();
+                }
+            }
+            else
+            {
+                game.decodeAnswer(e);
+            }
             
         }
     }

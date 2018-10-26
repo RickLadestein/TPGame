@@ -59,7 +59,6 @@
     <Compile Include="TCPServer\Session.cs" />
     <Compile Include="TCPServer\TCPReceiver.cs" />
     <Compile Include="TCPServer\TCPConnection.cs" />
-    <Compile Include="TCPManager\TCPDataManager.cs" />
     <Compile Include="TCPManager\TrivialPersuit.cs" />
   </ItemGroup>
   <ItemGroup>

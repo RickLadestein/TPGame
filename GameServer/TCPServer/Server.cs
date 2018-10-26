@@ -17,7 +17,10 @@ namespace GameServer.TCPServer
         private TcpListener server;
         private TcpClient player1;
         private TcpClient player2;
-        private List<Thread> sessionPool;
+        public List<Thread> sessionPool;
+
+        public List<Thread> removeables;
+
         private int sessionid;
 
         public Server()
@@ -25,10 +28,12 @@ namespace GameServer.TCPServer
             sessionid = 0;
             server = new TcpListener(IPAddress.Any, 6666);
             sessionPool = new List<Thread>();
+            removeables = new List<Thread>();
         }
 
         public void Start()
         {
+            StartRemovingThreadsThread();
             server.Start();
             Console.WriteLine($"Server started on IP:{GetLocalIPAddress()} and Port:{6666}");
             while (true)
@@ -46,16 +51,31 @@ namespace GameServer.TCPServer
             }
         }
 
-        public void StopSession(TCPConnection p1, Thread p1t, TCPConnection p2, Thread p2t, Session s, int sessionid)
+        public void StopSession(TCPConnection p1, TCPConnection p2, Session s, int sessionid)
         {
-            p1.Stop();
-            p2.Stop();
-            p1t.Abort();
-            p2t.Abort();
+            p1.CloseConnection();
+            p2.CloseConnection();
 
             Console.WriteLine($"Aborting sessions {sessionid}");
-            sessionPool[sessionid].Abort();
-            sessionPool[sessionid].Join();
+            Thread t = sessionPool[sessionid];
+            removeables.Add(t);
+            StartRemovingThreadsThread();
+        }
+
+        private void StartRemovingThreadsThread()
+        {
+            new Thread(() => RemoveThreads(this)).Start();
+        }
+
+        private void RemoveThreads(Server s)
+        {
+                foreach (Thread t in removeables)
+                {
+                    t.Abort();
+                    s.sessionPool.Remove(t);
+                    Console.WriteLine($"Active sessions {s.sessionPool.Count}");
+                }
+                s.removeables.Clear();
         }
 
         private string GetLocalIPAddress()

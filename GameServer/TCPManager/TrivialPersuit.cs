@@ -20,16 +20,15 @@ namespace GameServer.TCPManager
         public bool allplayersAnswered;
         private int answerCount;
         private int rightanswercount;
-        private TCPDataManager manager;
         private Session session;
 
-        Random randomNumber = new Random(123);
+        Random randomNumber = new Random(DateTime.Now.Second);
 
         public string answer2 = "", answer3 = "", answer4 = "";
 
         private jsonData json= new jsonData();
 
-        public TrivialPersuit(TCPDataManager manager, Session session)
+        public TrivialPersuit(Session session)
         {
             json.WritequestionsToFile();
             json.ReadquestionfromFile(this);
@@ -39,7 +38,6 @@ namespace GameServer.TCPManager
             allplayersAnswered = false;
             answerCount = 0;
             rightanswercount = 0;
-            this.manager = manager;
             this.session = session;
         }
 
@@ -78,14 +76,14 @@ namespace GameServer.TCPManager
                     if(answer == currentAnswer)
                     {
                         player1points += points;
-                        manager.AddCommandToQueue(1, Commands.PlayerEarnedPoints(1,points));
-                        manager.AddCommandToQueue(2, Commands.PlayerEarnedPoints(1, points));
+                        session.SendPlayerData(1, Commands.PlayerEarnedPoints(1,points));
+                        session.SendPlayerData(2, Commands.PlayerEarnedPoints(1, points));
                         session.player1points += points;
                         rightanswercount++;
                         
                     } else
                     {
-                        manager.AddCommandToQueue(1, Commands.PlayerEarnedPoints(1, 0));
+                        session.SendPlayerData(1, Commands.PlayerEarnedPoints(1, 0));
                     }
                     
                     break;
@@ -93,14 +91,14 @@ namespace GameServer.TCPManager
                     if (answer == currentAnswer)
                     {
                         player2points += points;
-                        manager.AddCommandToQueue(1, Commands.PlayerEarnedPoints(2, points));
-                        manager.AddCommandToQueue(2, Commands.PlayerEarnedPoints(2, points));
+                        session.SendPlayerData(1, Commands.PlayerEarnedPoints(2, points));
+                        session.SendPlayerData(2, Commands.PlayerEarnedPoints(2, points));
                         session.player2points += points;
                         rightanswercount++;
                     }
                     else
                     {
-                        manager.AddCommandToQueue(2, Commands.PlayerEarnedPoints(2, 0));
+                        session.SendPlayerData(2, Commands.PlayerEarnedPoints(2, 0));
                     }
                     break;
             }
@@ -116,13 +114,7 @@ namespace GameServer.TCPManager
         public void decodeAnswer(String e)
         {
             dynamic message;
-            try
-            {
-                message = JsonConvert.DeserializeObject(e);
-            } catch(Exception ex)
-            {
-                message = message = JsonConvert.DeserializeObject(e + "}");
-            }
+            message = JsonConvert.DeserializeObject(e);
             int player = Convert.ToInt32(message.player);
             String command = message.command;
             String answer = message.answer;

@@ -14,48 +14,44 @@ namespace GameServer.TCPServer
         private StreamReader reader;
         private Stream stream;
 
+        private bool alive;
+
         private ITCPDataListener listener;
 
         public TCPReceiver(TcpClient client, ITCPDataListener listener)
         {
             reader = new StreamReader(client.GetStream());
-            this.listener = listener;
             stream = client.GetStream();
+            this.listener = listener;
+            
         }
 
         public void Start()
         {
-            while (true)
+            alive = true;
+            while (alive)
             {
-                Thread.Sleep(10);
                 ReadStream();
             }
         }
 
+        public void Stop()
+        {
+            this.alive = false;
+            reader.Close();
+        }
+
         private void ReadStream()
         {
-            byte[] sizeInfo = new byte[4];
-
-            int totalRead = 0, read = 0;
-            do
+            try
             {
-                read = stream.Read(sizeInfo, totalRead, sizeInfo.Length - totalRead);
-
-                totalRead += read;
-            } while (totalRead < sizeInfo.Length && read > 0);
-
-            int messageSize = BitConverter.ToInt32(sizeInfo, 0);
-
-            byte[] data = new byte[messageSize];
-
-            totalRead = 0;
-
-            do
-            {
-                totalRead += read = stream.Read(data, totalRead, data.Length - totalRead);
-            } while (totalRead < messageSize && read > 0);
-            String message = Encoding.UTF8.GetString(data);
-            listener.OnDataReceived(message);
+                string message = reader.ReadLine();
+                listener.OnDataReceived(message);
+            } catch (Exception ex)
+            { 
+                Console.WriteLine("Error reading data: " + ex);
+                this.alive = false;
+            }
         }
     }
 }
